@@ -1214,7 +1214,8 @@ function $HttpProvider() {
           cache,
           cachedResp,
           reqHeaders = config.headers,
-          url = buildUrl(config.url, config.paramSerializer(config.params));
+          url = buildUrl(config.url, config.paramSerializer(config.params)),
+          skipApply = (isDefined(invokeApply) && !invokeApply);
 
       $http.pendingRequests.push(config);
       promise.then(removePendingReq, removePendingReq);
@@ -1285,11 +1286,13 @@ function $HttpProvider() {
           resolvePromise(response, status, headersString, statusText);
         }
 
-        if (useApplyAsync) {
-          $rootScope.$applyAsync(resolveHttpPromise);
-        } else {
-          resolveHttpPromise();
-          if (!$rootScope.$$phase) $rootScope.$apply();
+        if (!skipApply) {
+          if (useApplyAsync) {
+            $rootScope.$applyAsync(resolveHttpPromise);
+          } else {
+            resolveHttpPromise();
+            if (!$rootScope.$$phase) $rootScope.$apply();
+          }
         }
       }
 
